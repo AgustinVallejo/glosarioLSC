@@ -7,8 +7,7 @@ interface AddWordModalProps {
   isOpen: boolean;
   onClose: () => void;
   // This signature should match App.tsx's handleSaveWord.
-  // If App.tsx expects (wordName: string, videoDataUrl: string), this is correct.
-  onSaveWord: (wordName: string, videoDataURL: string) => void; 
+  onSaveWord: (wordName: string, videoBlob: Blob) => void; 
   existingWordName?: string | null;
 }
 
@@ -16,6 +15,7 @@ export const AddWordModal: React.FC<AddWordModalProps> = ({ isOpen, onClose, onS
   const [wordName, setWordName] = useState('');
   const [isRecording, setIsRecording] = useState(false);
   const [recordedVideoUrl, setRecordedVideoUrl] = useState<string | null>(null);
+  const [recordedVideoBlob, setRecordedVideoBlob] = useState<Blob | null>(null);
   const [videoStream, setVideoStream] = useState<MediaStream | null>(null);
   const [error, setError] = useState<string | null>(null);
 
@@ -32,6 +32,7 @@ export const AddWordModal: React.FC<AddWordModalProps> = ({ isOpen, onClose, onS
     }
     setIsRecording(false);
     setRecordedVideoUrl(null);
+    setRecordedVideoBlob(null);
     setError(null);
     recordedChunksRef.current = [];
   }, [isOpen, existingWordName]);
@@ -59,6 +60,7 @@ export const AddWordModal: React.FC<AddWordModalProps> = ({ isOpen, onClose, onS
   const startCamera = useCallback(async () => {
     setError(null);
     setRecordedVideoUrl(null);
+    setRecordedVideoBlob(null);
     recordedChunksRef.current = [];
     if (videoStream) {
       if (videoRef.current) videoRef.current.srcObject = videoStream;
@@ -95,6 +97,7 @@ export const AddWordModal: React.FC<AddWordModalProps> = ({ isOpen, onClose, onS
     }
     recordedChunksRef.current = [];
     setRecordedVideoUrl(null);
+    setRecordedVideoBlob(null);
     try {
       const options = { mimeType: 'video/webm; codecs=vp9' }; 
       if (!MediaRecorder.isTypeSupported(options.mimeType)) {
@@ -112,6 +115,7 @@ export const AddWordModal: React.FC<AddWordModalProps> = ({ isOpen, onClose, onS
         const blob = new Blob(recordedChunksRef.current, { type: recordedChunksRef.current[0]?.type || 'video/webm' });
         const videoUrl = URL.createObjectURL(blob);
         setRecordedVideoUrl(videoUrl);
+        setRecordedVideoBlob(blob);
         setIsRecording(false);
       };
       mediaRecorderRef.current.start();
@@ -138,6 +142,7 @@ export const AddWordModal: React.FC<AddWordModalProps> = ({ isOpen, onClose, onS
 
   const handleRetake = () => {
     setRecordedVideoUrl(null);
+    setRecordedVideoBlob(null);
     // setPhotoDataUrl(null);
     recordedChunksRef.current = [];
     startCamera(); 
@@ -241,8 +246,9 @@ export const AddWordModal: React.FC<AddWordModalProps> = ({ isOpen, onClose, onS
                   Volver a Grabar
                 </button>
                 <button
-                  onClick={() => onSaveWord(wordName, recordedVideoUrl)} // Assuming onSaveWord expects a Blob
-                  className="w-full sm:w-auto flex items-center justify-center bg-sky-600 hover:bg-sky-700 text-white font-semibold py-2.5 px-6 rounded-lg transition-colors shadow-md focus:outline-none focus:ring-2 focus:ring-sky-500"
+                  onClick={() => recordedVideoBlob && onSaveWord(wordName, recordedVideoBlob)}
+                  disabled={!recordedVideoBlob}
+                  className="w-full sm:w-auto flex items-center justify-center bg-sky-600 hover:bg-sky-700 text-white font-semibold py-2.5 px-6 rounded-lg transition-colors shadow-md focus:outline-none focus:ring-2 focus:ring-sky-500 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   <CheckIcon className="w-5 h-5 mr-2" />
                   {/* {recordedVideoUrl ? "Guardar Seña" : "Guardar Foto"} */}
