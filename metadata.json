@@ -1,0 +1,8 @@
+{
+  "name": "Glosario Público de Lengua de Señas Colombiana",
+  "description": "Una librería pública colaborativa de palabras en Lenguaje de Señas Colombiana (LSC). Añade nuevas señas o mira las existentes.",
+  "requestFramePermissions": [
+    "camera"
+  ],
+  "prompt": ""
+}
