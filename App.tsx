@@ -1,73 +1,58 @@
-
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
-import { Word, SignVideo } from './types';
+import { Word, SignVideo, convertSupabaseToAppFormat } from './types';
+import { WordsService } from './services/wordService.ts';
 import { WordCard } from './components/WordCard';
 import { AddWordModal } from './components/AddWordModal';
 import { PlusIcon, VideoCameraIcon } from './components/icons';
-
-const APP_STORAGE_KEY = 'lscWordsLibrary';
 
 const App: React.FC = () => {
   const [wordsList, setWordsList] = useState<Word[]>([]);
   const [showAddWordModal, setShowAddWordModal] = useState(false);
   const [editingWordName, setEditingWordName] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
+  // Load words from Supabase on mount
   useEffect(() => {
-    try {
-      const storedWords = localStorage.getItem(APP_STORAGE_KEY);
-      if (storedWords) {
-        setWordsList(JSON.parse(storedWords));
-      }
-    } catch (error) {
-      console.error("Error loading words from localStorage:", error);
-    }
+    loadWords();
   }, []);
 
-  const saveWordsToLocalStorage = useCallback((updatedWords: Word[]) => {
+  const loadWords = async () => {
     try {
-      localStorage.setItem(APP_STORAGE_KEY, JSON.stringify(updatedWords));
+      setIsLoading(true);
+      setError(null);
+      const supabaseWords = await WordsService.getAllWords();
+      const appFormatWords = convertSupabaseToAppFormat(supabaseWords);
+      setWordsList(appFormatWords);
     } catch (error) {
-      console.error("Error saving words to localStorage:", error);
-      alert("Error: No se pudo guardar la información. Es posible que el almacenamiento esté lleno.");
+      console.error('Error loading words:', error);
+      setError('Error al cargar las palabras. Por favor, recarga la página.');
+    } finally {
+      setIsLoading(false);
     }
-  }, []);
+  };
 
-  const handleSaveWord = useCallback((wordNameInput: string, mediaDataUrl: string, mediaType: 'video' | 'photo' = 'video') => {
-    const newSign: SignVideo = {
-      id: crypto.randomUUID(),
-      dataUrl: mediaDataUrl,
-      timestamp: Date.now(),
-      // type: mediaType, // This would be part of SignMedia if types.ts was updated
-    };
-
-    setWordsList(prevWordsList => {
-      const existingWordIndex = prevWordsList.findIndex(word => word.name.toLowerCase() === wordNameInput.toLowerCase());
-      let updatedWordsList;
-
-      if (existingWordIndex > -1) {
-        updatedWordsList = prevWordsList.map((word, index) =>
-          index === existingWordIndex
-            ? { ...word, signs: [...word.signs, newSign].sort((a,b) => b.timestamp - a.timestamp) }
-            : word
-        );
-      } else {
-        const newWord: Word = {
-          id: crypto.randomUUID(),
-          name: wordNameInput,
-          signs: [newSign],
-        };
-        updatedWordsList = [...prevWordsList, newWord];
-      }
+  const handleSaveWord = useCallback(async (wordNameInput: string, videoBlob: Blob) => {
+    try {
+      setError(null);
       
-      updatedWordsList.sort((a, b) => a.name.localeCompare(b.name));
-      saveWordsToLocalStorage(updatedWordsList);
-      return updatedWordsList;
-    });
-
-    setShowAddWordModal(false);
-    setEditingWordName(null);
-  }, [saveWordsToLocalStorage]);
+      // Convert blob to File for upload
+      const videoFile = WordsService.createVideoFile(videoBlob, wordNameInput);
+      
+      // Save to Supabase
+      await WordsService.saveWord(wordNameInput, videoFile);
+      
+      // Reload words to show the new addition
+      await loadWords();
+      
+      setShowAddWordModal(false);
+      setEditingWordName(null);
+    } catch (error) {
+      console.error('Error saving word:', error);
+      setError('Error al guardar la palabra. Inténtalo de nuevo.');
+    }
+  }, []);
 
   const handleOpenAddWordModal = (wordName?: string) => {
     if (wordName) {
@@ -81,16 +66,15 @@ const App: React.FC = () => {
   const displayedWords = useMemo(() => {
     const trimmedSearchTerm = searchTerm.trim();
     if (!trimmedSearchTerm) {
-      return wordsList; // wordsList is already sorted alphabetically
+      return wordsList;
     }
 
     const searchWordsArray = trimmedSearchTerm
       .toLowerCase()
-      .split(/\s+/) // Split by one or more spaces
+      .split(/\s+/)
       .filter(term => term.length > 0);
     
     const foundWordsInOrder: Word[] = [];
-    // Create a map for quick lookup of words by their lowercase name
     const wordsMap = new Map<string, Word>();
     wordsList.forEach(word => {
       wordsMap.set(word.name.toLowerCase(), word);
@@ -104,6 +88,18 @@ const App: React.FC = () => {
     }
     return foundWordsInOrder;
   }, [searchTerm, wordsList]);
+
+  // Loading state
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-slate-100 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-sky-600 mx-auto mb-4"></div>
+          <p className="text-slate-600">Cargando palabras...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-slate-100 text-slate-800 antialiased">
@@ -123,6 +119,19 @@ const App: React.FC = () => {
       </header>
 
       <main className="container mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        {/* Error Message */}
+        {error && (
+          <div className="mb-6 bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg">
+            {error}
+            <button 
+              onClick={() => setError(null)}
+              className="ml-2 text-red-500 hover:text-red-700"
+            >
+              ✕
+            </button>
+          </div>
+        )}
+
         <div className="mb-8">
           <input 
             type="text"
@@ -138,7 +147,7 @@ const App: React.FC = () => {
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
             {displayedWords.map((word, index) => (
               <WordCard 
-                key={`${word.id}-${index}`} // Ensure unique key if same word appears multiple times
+                key={`${word.id}-${index}`}
                 word={word} 
                 onAddAlternativeSign={() => handleOpenAddWordModal(word.name)} 
               />
@@ -149,7 +158,7 @@ const App: React.FC = () => {
             <VideoCameraIcon className="w-24 h-24 text-slate-400 mx-auto mb-4" />
             {(() => {
               const trimmedSearch = searchTerm.trim();
-              if (trimmedSearch) { // Active search, but no results from the phrase
+              if (trimmedSearch) {
                 return (
                   <>
                     <h2 className="text-2xl font-semibold text-slate-600 mb-2">
@@ -167,7 +176,7 @@ const App: React.FC = () => {
                     </p>
                   </>
                 );
-              } else { // No active search, and displayedWords is empty (means wordsList is empty)
+              } else {
                 return (
                   <>
                     <h2 className="text-2xl font-semibold text-slate-600 mb-2">
@@ -197,8 +206,7 @@ const App: React.FC = () => {
         <button
           onClick={() => {
             if (window.confirm("¿Estás seguro de que quieres borrar todas las palabras guardadas? Esta acción no se puede deshacer.")) {
-              localStorage.removeItem(APP_STORAGE_KEY);
-              setWordsList([]);
+              WordsService.deleteAllWords();
             }
           }}
           className="text-red-400 hover:text-red-500 mt-2" 
@@ -208,7 +216,7 @@ const App: React.FC = () => {
       <AddWordModal
         isOpen={showAddWordModal}
         onClose={() => { setShowAddWordModal(false); setEditingWordName(null);}}
-        onSaveWord={(wordName, dataUrl) => handleSaveWord(wordName, dataUrl, 'video')}
+        onSaveWord={handleSaveWord}
         existingWordName={editingWordName}
       />
     </div>

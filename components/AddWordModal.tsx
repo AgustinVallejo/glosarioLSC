@@ -8,9 +8,7 @@ interface AddWordModalProps {
   onClose: () => void;
   // This signature should match App.tsx's handleSaveWord.
   // If App.tsx expects (wordName: string, videoDataUrl: string), this is correct.
-  // If App.tsx expects (wordName: string, mediaDataUrl: string, mediaType: 'video' | 'photo'), this needs update.
-  // Sticking to the provided files, it's (wordName: string, videoDataUrl: string)
-  onSaveWord: (wordName: string, videoDataUrl: string) => void; 
+  onSaveWord: (wordName: string, videoDataURL: string) => void; 
   existingWordName?: string | null;
 }
 
@@ -20,11 +18,6 @@ export const AddWordModal: React.FC<AddWordModalProps> = ({ isOpen, onClose, onS
   const [recordedVideoUrl, setRecordedVideoUrl] = useState<string | null>(null);
   const [videoStream, setVideoStream] = useState<MediaStream | null>(null);
   const [error, setError] = useState<string | null>(null);
-  
-  // States for photo capture would be here if that feature was being re-added
-  // const [photoDataUrl, setPhotoDataUrl] = useState<string | null>(null);
-  // const [captureMode, setCaptureMode] = useState<'video' | 'photo'>('video');
-
 
   const videoRef = useRef<HTMLVideoElement>(null);
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
@@ -39,10 +32,8 @@ export const AddWordModal: React.FC<AddWordModalProps> = ({ isOpen, onClose, onS
     }
     setIsRecording(false);
     setRecordedVideoUrl(null);
-    // setPhotoDataUrl(null);
     setError(null);
     recordedChunksRef.current = [];
-    // setCaptureMode('video'); // Reset to video mode
   }, [isOpen, existingWordName]);
 
   const cleanupVideoStream = useCallback(() => {
@@ -68,7 +59,6 @@ export const AddWordModal: React.FC<AddWordModalProps> = ({ isOpen, onClose, onS
   const startCamera = useCallback(async () => {
     setError(null);
     setRecordedVideoUrl(null);
-    // setPhotoDataUrl(null);
     recordedChunksRef.current = [];
     if (videoStream) {
       if (videoRef.current) videoRef.current.srcObject = videoStream;
@@ -140,65 +130,6 @@ export const AddWordModal: React.FC<AddWordModalProps> = ({ isOpen, onClose, onS
     }
     setIsRecording(false);
   };
-
-  // const handleTakePhoto = () => {
-  //   if (!videoRef.current || !videoStream) {
-  //     setError("La cámara no está activa para tomar foto.");
-  //     startCamera();
-  //     return;
-  //   }
-  //   const videoNode = videoRef.current;
-  //   const canvas = canvasRef.current || document.createElement('canvas');
-  //   if (!canvasRef.current) { // Mount canvas if not already
-  //       canvas.style.display = "none";
-  //       document.body.appendChild(canvas);
-  //   }
-  //   canvas.width = videoNode.videoWidth;
-  //   canvas.height = videoNode.videoHeight;
-  //   const context = canvas.getContext('2d');
-  //   if (context) {
-  //     context.drawImage(videoNode, 0, 0, canvas.width, canvas.height);
-  //     const dataUrl = canvas.toDataURL('image/jpeg'); // Or image/png
-  //     setPhotoDataUrl(dataUrl);
-  //     setRecordedVideoUrl(null); // Clear any video
-  //     setError(null);
-  //   } else {
-  //     setError("No se pudo capturar la foto.");
-  //   }
-  //   if (!canvasRef.current) { // Clean up if temporarily created
-  //       document.body.removeChild(canvas);
-  //   }
-  // };
-
-
-  const handleSave = () => {
-    if (!wordName.trim()) {
-      setError("Por favor, ingresa el nombre de la palabra.");
-      return;
-    }
-
-    // This logic needs to align with whether we're saving a photo or video
-    // if (captureMode === 'photo' && photoDataUrl) {
-    //   onSaveWord(wordName.trim(), photoDataUrl); // Potentially needs a third 'photo' arg
-    //   handleCloseModal();
-    // } else 
-    if (recordedVideoUrl) {
-      const blobType = recordedChunksRef.current[0]?.type || 'video/webm';
-      const blob = new Blob(recordedChunksRef.current, { type: blobType });
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        const base64data = reader.result as string;
-        onSaveWord(wordName.trim(), base64data); // Potentially needs a third 'video' arg
-        handleCloseModal();
-      };
-      reader.onerror = () => {
-        setError("Error al procesar el video. Intenta de nuevo.");
-      }
-      reader.readAsDataURL(blob);
-    } else {
-      setError("Por favor, graba un video o toma una foto para la seña."); // Adjusted error
-    }
-  };
   
   const handleCloseModal = () => {
     cleanupVideoStream();
@@ -214,7 +145,6 @@ export const AddWordModal: React.FC<AddWordModalProps> = ({ isOpen, onClose, onS
 
   if (!isOpen) return null;
 
-  // const isMediaCaptured = recordedVideoUrl || photoDataUrl;
   const isMediaCaptured = recordedVideoUrl; // Simplified for now
 
   return (
@@ -249,7 +179,6 @@ export const AddWordModal: React.FC<AddWordModalProps> = ({ isOpen, onClose, onS
 
           <div className="mb-5">
             <label className="block text-sm font-medium text-slate-700 mb-1">
-              {/* {captureMode === 'video' ? "Grabar Seña (video corto)" : "Tomar Foto de Seña"} */}
               Grabar Seña (video corto)
             </label>
             <div className="aspect-video bg-slate-800 rounded-lg overflow-hidden relative shadow-inner">
@@ -260,9 +189,6 @@ export const AddWordModal: React.FC<AddWordModalProps> = ({ isOpen, onClose, onS
                 muted
                 autoPlay 
               />
-              {/* {photoDataUrl && (
-                <img src={photoDataUrl} alt="Previsualización de foto" className="w-full h-full object-cover block" />
-              )} */}
               {recordedVideoUrl && (
                 <video
                   src={recordedVideoUrl}
@@ -283,24 +209,6 @@ export const AddWordModal: React.FC<AddWordModalProps> = ({ isOpen, onClose, onS
             {error && <p className="text-red-500 text-sm mt-2">{error}</p>}
           </div>
           
-          {/* Buttons for switching mode
-          <div className="flex justify-center gap-2 mb-3">
-            <button 
-              onClick={() => { setCaptureMode('video'); handleRetake(); }}
-              className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${captureMode === 'video' ? 'bg-sky-600 text-white' : 'bg-slate-200 text-slate-700 hover:bg-slate-300'}`}
-            >
-              Grabar Video
-            </button>
-            <button 
-              onClick={() => { setCaptureMode('photo'); handleRetake(); }}
-              className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${captureMode === 'photo' ? 'bg-sky-600 text-white' : 'bg-slate-200 text-slate-700 hover:bg-slate-300'}`}
-            >
-              Tomar Foto
-            </button>
-          </div>
-          */}
-
-
           <div className="flex flex-col sm:flex-row justify-between items-center gap-3 mb-2">
             {!isMediaCaptured ? (
               // captureMode === 'video' ? (
@@ -322,16 +230,6 @@ export const AddWordModal: React.FC<AddWordModalProps> = ({ isOpen, onClose, onS
                     Grabar Seña
                   </button>
                 )
-              // ) : ( // Photo capture button
-              //   <button
-              //     onClick={handleTakePhoto}
-              //     disabled={!videoStream}
-              //     className="w-full sm:w-auto flex items-center justify-center bg-teal-500 hover:bg-teal-600 text-white font-semibold py-2.5 px-6 rounded-lg transition-colors shadow-md focus:outline-none focus:ring-2 focus:ring-teal-400 disabled:opacity-50 disabled:cursor-not-allowed"
-              //   >
-              //     <CameraIcon className="w-5 h-5 mr-2" />
-              //     Tomar Foto
-              //   </button>
-              // )
             ) : (
               <>
                 <button
@@ -343,7 +241,7 @@ export const AddWordModal: React.FC<AddWordModalProps> = ({ isOpen, onClose, onS
                   Volver a Grabar
                 </button>
                 <button
-                  onClick={handleSave}
+                  onClick={() => onSaveWord(wordName, recordedVideoUrl)} // Assuming onSaveWord expects a Blob
                   className="w-full sm:w-auto flex items-center justify-center bg-sky-600 hover:bg-sky-700 text-white font-semibold py-2.5 px-6 rounded-lg transition-colors shadow-md focus:outline-none focus:ring-2 focus:ring-sky-500"
                 >
                   <CheckIcon className="w-5 h-5 mr-2" />
