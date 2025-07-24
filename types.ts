@@ -12,13 +12,33 @@ export interface Word {
 
 // Utility function to convert Supabase data to your existing format
 export function convertSupabaseToAppFormat(supabaseWords: any[]): Word[] {
-  return supabaseWords.map(word => ({
-    id: word.id,
-    name: word.name,
-    signs: word.signs.map((sign: any) => ({
-      id: sign.id,
-      video_url: sign.video_url,
-      timestamp: new Date(sign.created_at).getTime()
-    })).sort((a: SignVideo, b: SignVideo) => b.timestamp - a.timestamp)
-  }))
+  console.log('🔄 [Types] Converting Supabase data to app format...', supabaseWords.length, 'words')
+  
+  const convertedWords = supabaseWords.map((word, wordIndex) => {
+    console.log(`🔄 [Types] Converting word ${wordIndex + 1}: "${word.name}"`)
+    console.log(`  📊 Raw word data:`, word)
+    
+    const convertedSigns = word.signs.map((sign: any, signIndex: number) => {
+      console.log(`  🎥 Converting sign ${signIndex + 1}:`, sign)
+      const convertedSign = {
+        id: sign.id,
+        video_url: sign.video_url,
+        timestamp: new Date(sign.created_at).getTime()
+      }
+      console.log(`  ✅ Converted sign:`, convertedSign)
+      return convertedSign
+    }).sort((a: SignVideo, b: SignVideo) => b.timestamp - a.timestamp)
+    
+    const convertedWord = {
+      id: word.id,
+      name: word.name,
+      signs: convertedSigns
+    }
+    
+    console.log(`✅ [Types] Converted word "${word.name}":`, convertedWord)
+    return convertedWord
+  })
+  
+  console.log('🎉 [Types] Conversion completed:', convertedWords.length, 'words converted')
+  return convertedWords
 }

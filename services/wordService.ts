@@ -1,6 +1,20 @@
 import { supabase, Word, Sign, WordWithSigns } from '../supabase'
 
 export class WordsService {
+  // Debug function to test video URL accessibility
+  static async testVideoUrl(url: string, signId: string): Promise<void> {
+    try {
+      const response = await fetch(url, { method: 'HEAD' })
+      if (response.ok) {
+        console.log(`    ✅ Sign ${signId}: Video URL is accessible (${response.status})`)
+      } else {
+        console.error(`    ❌ Sign ${signId}: Video URL returned ${response.status} ${response.statusText}`)
+      }
+    } catch (error) {
+      console.error(`    💥 Sign ${signId}: Error testing video URL:`, error)
+    }
+  }
+
   // Debug function to test Supabase connection
   static async testConnection(): Promise<void> {
     console.log('🧪 [WordsService] Testing Supabase connection...')
@@ -44,6 +58,27 @@ export class WordsService {
       }
 
       console.log('✅ [WordsService] Successfully fetched', data?.length || 0, 'words')
+      
+      // Debug: Log video URLs for each word
+      if (data && data.length > 0) {
+        data.forEach((word: any, wordIndex: number) => {
+          console.log(`📝 [WordsService] Word ${wordIndex + 1}: "${word.name}" (ID: ${word.id})`)
+          if (word.signs && word.signs.length > 0) {
+            word.signs.forEach((sign: any, signIndex: number) => {
+              console.log(`  🎥 Sign ${signIndex + 1}: ${sign.video_url}`)
+              // Test if URL is accessible
+              if (sign.video_url) {
+                console.log(`  🔗 Testing URL accessibility for sign ${sign.id}...`)
+                // Test URL asynchronously
+                WordsService.testVideoUrl(sign.video_url, sign.id)
+              }
+            })
+          } else {
+            console.log(`  ⚠️  No signs found for word "${word.name}"`)
+          }
+        })
+      }
+      
       return data as WordWithSigns[]
     } catch (err) {
       console.error('💥 [WordsService] Unexpected error in getAllWords:', err)

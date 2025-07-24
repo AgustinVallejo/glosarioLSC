@@ -31,6 +31,7 @@ const App: React.FC = () => {
       console.log('📊 [App] Received supabase words:', supabaseWords)
       const appFormatWords = convertSupabaseToAppFormat(supabaseWords);
       console.log('📊 [App] Converted to app format:', appFormatWords)
+      console.log('📊 [App] Sample word structure:', appFormatWords[0])
       setWordsList(appFormatWords);
       console.log('✅ [App] Successfully loaded', appFormatWords.length, 'words')
     } catch (error) {
@@ -186,13 +187,16 @@ const App: React.FC = () => {
 
         {displayedWords.length > 0 ? (
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-            {displayedWords.map((word, index) => (
-              <WordCard 
-                key={`${word.id}-${index}`}
-                word={word} 
-                onAddAlternativeSign={() => handleOpenAddWordModal(word.name)} 
-              />
-            ))}
+            {displayedWords.map((word, index) => {
+              console.log(`🎨 [App] Rendering WordCard ${index + 1}:`, word)
+              return (
+                <WordCard 
+                  key={`${word.id}-${index}`}
+                  word={word} 
+                  onAddAlternativeSign={() => handleOpenAddWordModal(word.name)} 
+                />
+              )
+            })}
           </div>
         ) : (
           <div className="text-center py-12">

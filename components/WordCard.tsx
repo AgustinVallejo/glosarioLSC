@@ -10,18 +10,31 @@ interface WordCardProps {
 }
 
 export const WordCard: React.FC<WordCardProps> = ({ word, onAddAlternativeSign }) => {
-  const videoElements = word.signs.map((sign) => (
-    <video
-      key={sign.id}
-      src={sign.dataUrl}
-      className="w-full h-full object-cover rounded-md aspect-video bg-slate-200"
-      playsInline
-      autoPlay
-      muted
-      loop
-      controls={false} // controls can be distracting for "GIF" like videos
-    />
-  ));
+  console.log('🎨 [WordCard] Rendering word:', word.name, 'with', word.signs.length, 'signs')
+  console.log('🎨 [WordCard] Word data:', word)
+  
+  const videoElements = word.signs.map((sign, index) => {
+    console.log(`🎥 [WordCard] Creating video element ${index + 1} for sign:`, sign)
+    console.log(`🎥 [WordCard] Video URL:`, sign.video_url)
+    
+    return (
+      <video
+        key={sign.id}
+        src={sign.video_url} // Fixed: was sign.dataUrl, should be sign.video_url
+        className="w-full h-full object-cover rounded-md aspect-video bg-slate-200"
+        playsInline
+        autoPlay
+        muted
+        loop
+        controls={false} // controls can be distracting for "GIF" like videos
+        onLoadStart={() => console.log(`🎬 [WordCard] Video ${index + 1} started loading:`, sign.video_url)}
+        onCanPlay={() => console.log(`✅ [WordCard] Video ${index + 1} can play:`, sign.video_url)}
+        onError={(e) => console.error(`❌ [WordCard] Video ${index + 1} error:`, e, 'URL:', sign.video_url)}
+      />
+    )
+  });
+
+  console.log('🎨 [WordCard] Created', videoElements.length, 'video elements')
 
   return (
     <div className="bg-white rounded-xl shadow-lg overflow-hidden flex flex-col transition-all duration-300 hover:shadow-2xl">
