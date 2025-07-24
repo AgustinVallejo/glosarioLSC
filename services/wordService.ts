@@ -44,8 +44,13 @@ export class WordsService {
   }
 
   // Add a new word or add sign to existing word
-  static async saveWord(wordName: string, videoFile: File): Promise<void> {
+  static async saveWord(wordName: string, videoBlob: Blob): Promise<void> {
     try {
+      // Convert Blob to File for upload
+      const videoFile = new File([videoBlob], `${wordName}-${Date.now()}.webm`, { 
+        type: videoBlob.type || 'video/webm' 
+      });
+
       // First, check if word exists
       const { data: existingWord } = await supabase
         .from('words')
