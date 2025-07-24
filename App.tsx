@@ -121,28 +121,35 @@ const App: React.FC = () => {
   
   const displayedWords = useMemo(() => {
     const trimmedSearchTerm = searchTerm.trim();
-    if (!trimmedSearchTerm) {
-      return wordsList;
-    }
-
-    const searchWordsArray = trimmedSearchTerm
-      .toLowerCase()
-      .split(/\s+/)
-      .filter(term => term.length > 0);
+    let wordsToDisplay = wordsList;
     
-    const foundWordsInOrder: Word[] = [];
-    const wordsMap = new Map<string, Word>();
-    wordsList.forEach(word => {
-      wordsMap.set(word.name.toLowerCase(), word);
-    });
+    if (trimmedSearchTerm) {
+      const searchWordsArray = trimmedSearchTerm
+        .toLowerCase()
+        .split(/\s+/)
+        .filter(term => term.length > 0);
+      
+      const foundWordsInOrder: Word[] = [];
+      const wordsMap = new Map<string, Word>();
+      wordsList.forEach(word => {
+        wordsMap.set(word.name.toLowerCase(), word);
+      });
 
-    for (const searchWord of searchWordsArray) {
-      const matchedWord = wordsMap.get(searchWord);
-      if (matchedWord) {
-        foundWordsInOrder.push(matchedWord);
+      for (const searchWord of searchWordsArray) {
+        const matchedWord = wordsMap.get(searchWord);
+        if (matchedWord) {
+          foundWordsInOrder.push(matchedWord);
+        }
       }
+      wordsToDisplay = foundWordsInOrder;
     }
-    return foundWordsInOrder;
+    
+    // Sort words by the oldest sign timestamp (ascending order - oldest first)
+    return wordsToDisplay.sort((a, b) => {
+      const aOldestTimestamp = a.signs.length > 0 ? Math.min(...a.signs.map(sign => sign.timestamp)) : Date.now();
+      const bOldestTimestamp = b.signs.length > 0 ? Math.min(...b.signs.map(sign => sign.timestamp)) : Date.now();
+      return aOldestTimestamp - bOldestTimestamp;
+    });
   }, [searchTerm, wordsList]);
 
   // New phrase data for displaying complete phrases with both found and missing words
@@ -234,14 +241,27 @@ const App: React.FC = () => {
         )}
 
         <div className="mb-8">
-          <input 
-            type="text"
-            placeholder="Buscar frase o palabra..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-full max-w-md mx-auto block px-4 py-3 bg-white/95 backdrop-blur-sm text-slate-900 border border-white/30 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-sky-500 focus:border-sky-500 transition-colors text-lg"
-            aria-label="Buscar frase o palabra"
-          />
+          <div className="relative w-full max-w-md mx-auto">
+            <input 
+              type="text"
+              placeholder="Buscar frase o palabra..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="w-full block px-4 py-3 pr-12 bg-white/95 backdrop-blur-sm text-slate-900 border border-white/30 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-sky-500 focus:border-sky-500 transition-colors text-lg"
+              aria-label="Buscar frase o palabra"
+            />
+            {searchTerm && (
+              <button
+                onClick={() => setSearchTerm('')}
+                className="absolute right-3 top-1/2 transform -translate-y-1/2 text-slate-400 hover:text-slate-600 transition-colors p-1 rounded-full hover:bg-slate-100/50"
+                aria-label="Limpiar búsqueda"
+              >
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            )}
+          </div>
         </div>
 
         {/* Display logic for search results */}
