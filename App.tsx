@@ -15,44 +15,85 @@ const App: React.FC = () => {
 
   // Load words from Supabase on mount
   useEffect(() => {
+    console.log('🚀 [App] Component mounted, testing connection and loading words...')
+    // Test connection first
+    WordsService.testConnection()
     loadWords();
   }, []);
 
   const loadWords = async () => {
+    console.log('🔄 [App] Starting loadWords...')
     try {
       setIsLoading(true);
       setError(null);
+      console.log('📞 [App] Calling WordsService.getAllWords()')
       const supabaseWords = await WordsService.getAllWords();
+      console.log('📊 [App] Received supabase words:', supabaseWords)
       const appFormatWords = convertSupabaseToAppFormat(supabaseWords);
+      console.log('📊 [App] Converted to app format:', appFormatWords)
       setWordsList(appFormatWords);
+      console.log('✅ [App] Successfully loaded', appFormatWords.length, 'words')
     } catch (error) {
-      console.error('Error loading words:', error);
+      console.error('❌ [App] Error loading words:', error);
       setError('Error al cargar las palabras. Por favor, recarga la página.');
     } finally {
       setIsLoading(false);
+      console.log('🏁 [App] Finished loadWords')
     }
   };
 
   const handleSaveWord = useCallback(async (wordNameInput: string, videoBlob: Blob) => {
+    console.log('💾 [App] Starting handleSaveWord...', { 
+      wordNameInput, 
+      blobSize: videoBlob.size, 
+      blobType: videoBlob.type,
+      currentWordsCount: wordsList.length
+    })
+    
     try {
       setError(null);
       
-      // Convert blob to File for upload
-      const videoFile = WordsService.createVideoFile(videoBlob, wordNameInput);
+      // Debug: Check if we're getting the blob correctly
+      console.log('🎯 [App] Received blob details:', {
+        size: videoBlob.size,
+        type: videoBlob.type,
+        constructor: videoBlob.constructor.name
+      })
       
-      // Save to Supabase
-      await WordsService.saveWord(wordNameInput, videoFile);
+      // Convert current words list to format service expects
+      const existingWordsForService = wordsList.map(word => ({
+        id: word.id,
+        name: word.name,
+        created_at: '', // Not needed for lookup
+        updated_at: '', // Not needed for lookup
+        signs: word.signs.map(sign => ({
+          id: sign.id,
+          word_id: word.id,
+          video_url: sign.video_url,
+          created_at: new Date(sign.timestamp).toISOString()
+        }))
+      }))
+      
+      console.log('🔍 [App] Converted words for service:', existingWordsForService.length, 'words')
+      
+      // Save to Supabase (pass existing words to avoid database lookup)
+      console.log('📞 [App] Calling WordsService.saveWord with blob and existing words')
+      await WordsService.saveWord(wordNameInput, videoBlob, existingWordsForService);
+      console.log('✅ [App] Successfully saved word')
       
       // Reload words to show the new addition
+      console.log('🔄 [App] Reloading words after save...')
       await loadWords();
       
       setShowAddWordModal(false);
       setEditingWordName(null);
+      console.log('🎉 [App] handleSaveWord completed successfully!')
     } catch (error) {
-      console.error('Error saving word:', error);
+      console.error('❌ [App] Error in handleSaveWord:', error);
+      console.error('❌ [App] Error stack:', error instanceof Error ? error.stack : 'No stack trace');
       setError('Error al guardar la palabra. Inténtalo de nuevo.');
     }
-  }, []);
+  }, [wordsList]);
 
   const handleOpenAddWordModal = (wordName?: string) => {
     if (wordName) {
