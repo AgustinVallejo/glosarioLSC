@@ -1,0 +1,110 @@
+/* Gradientes con ruido granular para SEÑAS - Glosario LSC */
+
+/* Función para generar ruido granular */
+.granular-noise {
+  position: relative;
+}
+
+.granular-noise::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: 
+    url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='perlinNoise' baseFrequency='1' numOctaves='1' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='0.3'/%3E%3C/svg%3E");
+  pointer-events: none;
+  z-index: 1;
+}
+
+/* Gradiente de fondo principal - azul sutil */
+.app-background {
+  background: linear-gradient(
+    135deg,
+    #f8fafe 0%,     /* Azul muy muy claro, casi blanco */
+    #f3f8fe 25%,    /* Azul muy claro */
+    #eef4fd 50%,    /* Azul claro desaturado */
+    #e8f0fc 75%,    /* Azul claro */
+    #e0eafb 100%    /* Azul claro medio */
+  );
+  min-height: 100vh;
+}
+
+/* Gradiente para la top bar - azul más intenso */
+.header-gradient {
+  background: linear-gradient(
+    135deg,
+    #1976d2 0%,     /* Azul medio */
+    #1565c0 25%,    /* Azul medio-oscuro */
+    #0d47a1 50%,    /* Azul oscuro */
+    #1a237e 75%,    /* Azul muy oscuro */
+    #0d1b69 100%    /* Azul casi negro */
+  );
+}
+
+/* Clase utilitaria para aplicar el fondo con ruido */
+.bg-app-gradient {
+  background: linear-gradient(
+    30deg,
+    #f8fafe 0%,     /* Azul muy muy claro, casi blanco */
+    #f3f8fe 25%,    /* Azul muy claro */
+    #eef4fd 50%,    /* Azul claro desaturado */
+    #c0d9ff 75%,    /* Azul claro */
+    #649dff 100%    /* Azul claro medio */
+  );
+}
+
+/* Clase utilitaria para la header con ruido */
+.bg-header-gradient {
+  background: linear-gradient(
+    135deg,
+    #1976d2 0%,     /* Azul medio */
+    #1565c0 25%,    /* Azul medio-oscuro */
+    #0d47a1 50%,    /* Azul oscuro */
+    #1a237e 75%,    /* Azul muy oscuro */
+    #0d1b69 100%    /* Azul casi negro */
+  );
+}
+
+/* Estilos adicionales para mejorar la legibilidad sobre el gradiente */
+.content-overlay {
+  position: relative;
+  z-index: 2;
+}
+
+/* Mejoras en las tarjetas para que contrasten bien con el fondo */
+.card-enhanced {
+  background: rgba(255, 255, 255, 0.92);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+.card-enhanced:hover {
+  background: rgba(255, 255, 255, 0.96);
+  transform: translateY(-2px);
+}
+
+/* Loading screen con gradiente */
+.loading-gradient {
+  background: linear-gradient(
+    135deg,
+    #f8fafe 0%,
+    #f3f8fe 25%,
+    #eef4fd 50%,
+    #e8f0fc 75%,
+    #e0eafb 100%
+  );
+}
+
+/* Mejoras adicionales para elementos transparentes */
+.glass-effect {
+  background: rgba(255, 255, 255, 0.85);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+/* Fuente personalizada para el título principal */
+.title-font {
+  font-family: 'Bree Serif', serif;
+}

@@ -36,7 +36,7 @@ export const WordCard: React.FC<WordCardProps> = ({ word, onAddAlternativeSign }
   console.log('🎨 [WordCard] Created', videoElements.length, 'video elements')
 
   return (
-    <div className="bg-white rounded-xl shadow-lg overflow-hidden flex flex-col transition-all duration-300 hover:shadow-2xl">
+    <div className="card-enhanced rounded-xl shadow-lg overflow-hidden flex flex-col transition-all duration-300 hover:shadow-2xl border-white/20">
       <div className="aspect-video w-full bg-slate-200">
         {videoElements.length > 0 ? (
           <Carousel items={videoElements} itemContainerClassName="w-full h-full"/>

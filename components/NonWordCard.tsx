@@ -12,7 +12,7 @@ export const NonWordCard: React.FC<NonWordCardProps> = ({ word, onAddWord }) => 
   };
 
   return (
-    <div className="bg-purple-100 border-2 border-purple-200 rounded-lg shadow-sm overflow-hidden flex flex-col transition-all duration-300 hover:shadow-md hover:border-purple-300 group cursor-pointer" onClick={handleClick}>
+    <div className="card-enhanced border-2 border-purple-200 rounded-lg shadow-sm overflow-hidden flex flex-col transition-all duration-300 hover:shadow-md hover:border-purple-300 group cursor-pointer" onClick={handleClick}>
       <div className="aspect-video w-full bg-purple-50 flex items-center justify-center relative">
         <div className="text-purple-400 group-hover:text-purple-600 transition-colors duration-300">
           <PlusIcon className="w-8 h-8 group-hover:scale-110 transition-transform duration-300" />

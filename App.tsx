@@ -188,8 +188,8 @@ const App: React.FC = () => {
   // Loading state
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-slate-100 flex items-center justify-center">
-        <div className="text-center">
+      <div className="min-h-screen bg-app-gradient granular-noise flex items-center justify-center">
+        <div className="text-center content-overlay">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-sky-600 mx-auto mb-4"></div>
           <p className="text-slate-600">Cargando palabras...</p>
         </div>
@@ -198,15 +198,17 @@ const App: React.FC = () => {
   }
 
   return (
-    <div className="min-h-screen bg-slate-100 text-slate-800 antialiased">
-      <header className="bg-sky-700 text-white shadow-md sticky top-0 z-40">
-        <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-4 flex flex-col sm:flex-row justify-between items-center">
-          <h1 className="text-3xl font-bold tracking-tight mb-2 sm:mb-0">
-            SEÑAS
-          </h1>
-          <h2>
-            El Glosario Público de Lengua de Señas Colombiana (LSC)
-          </h2>
+    <div className="min-h-screen bg-app-gradient granular-noise text-slate-800 antialiased">
+      <header className="bg-header-gradient granular-noise text-white shadow-md sticky top-0 z-40">
+        <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-4 flex flex-col lg:flex-row justify-between items-center content-overlay">
+          <div className="flex flex-col md:flex-row items-center md:items-baseline mb-4 lg:mb-0">
+            <h1 className="title-font text-4xl md:text-5xl font-bold tracking-tight mb-3 md:mb-0 md:mr-7">
+              Señas
+            </h1>
+            <h2 className="text-sm sm:text-base text-center md:text-left text-slate-100 leading-tight max-w-xs sm:max-w-sm md:max-w-md">
+              El Glosario Público de Lengua de Señas Colombiana (LSC)
+            </h2>
+          </div>
           <button
             onClick={() => handleOpenAddWordModal()}
             className="flex items-center bg-sky-500 hover:bg-sky-400 text-white font-semibold py-2 px-4 rounded-lg transition-colors shadow hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-sky-300 focus:ring-opacity-75"
@@ -217,10 +219,10 @@ const App: React.FC = () => {
         </div>
       </header>
 
-      <main className="container mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <main className="container mx-auto px-4 sm:px-6 lg:px-8 py-8 content-overlay">
         {/* Error Message */}
         {error && (
-          <div className="mb-6 bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg">
+          <div className="mb-6 glass-effect border border-red-300 text-red-700 px-4 py-3 rounded-lg">
             {error}
             <button 
               onClick={() => setError(null)}
@@ -237,7 +239,7 @@ const App: React.FC = () => {
             placeholder="Buscar frase o palabra..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-full max-w-md mx-auto block px-4 py-3 bg-white text-slate-900 border border-slate-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-sky-500 focus:border-sky-500 transition-colors text-lg"
+            className="w-full max-w-md mx-auto block px-4 py-3 bg-white/95 backdrop-blur-sm text-slate-900 border border-white/30 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-sky-500 focus:border-sky-500 transition-colors text-lg"
             aria-label="Buscar frase o palabra"
           />
         </div>
@@ -247,7 +249,7 @@ const App: React.FC = () => {
           phraseData ? (
             <>
               {phraseData.isPhrase && phraseData.hasMissingWords && (
-                <div className="mb-6 bg-amber-50 border border-amber-200 text-amber-800 px-4 py-3 rounded-lg">
+                <div className="mb-6 glass-effect border border-amber-300 text-amber-800 px-4 py-3 rounded-lg">
                   <p className="font-medium">Frase parcialmente encontrada</p>
                   <p className="text-sm">Se muestran las palabras encontradas y las faltantes que puedes añadir.</p>
                 </div>
