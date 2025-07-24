@@ -1,14 +1,14 @@
-# Run and deploy your AI Studio app
+# SEÑAS: El glosario público de la Lengua de Señas Colombiana (LSC)
 
-This contains everything you need to run your app locally.
+Este proyecto busca servir como repositorio público de términos y definiciones en Lengua de Señas Colombiana (LSC), permitiendo a los usuarios buscar, agregar y gestionar palabras en LSC. Asimismo, permite buscar frases completas en LSC y completar palabras que aún no estén en el glosario.
 
-## Run Locally
+Agradecemos su uso responsable y respetuoso de este glosario, de manera que sea una herramienta útil para la comunidad de LSC.
 
-**Prerequisites:**  Node.js
+## Ejecutar localmente
 
+**Prerrequisitos:**  Node.js
 
-1. Install dependencies:
+1. Instalar dependencias:
    `npm install`
-2. Set the `GEMINI_API_KEY` in [.env.local](.env.local) to your Gemini API key
-3. Run the app:
+2. Ejecutar la aplicación:
    `npm run dev`
