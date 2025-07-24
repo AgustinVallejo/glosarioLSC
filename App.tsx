@@ -205,7 +205,7 @@ const App: React.FC = () => {
   }
 
   return (
-    <div className="min-h-screen bg-app-gradient granular-noise text-slate-800 antialiased">
+    <div className="min-h-screen bg-app-gradient granular-noise text-slate-800 antialiased flex flex-col">
       <header className="bg-header-gradient granular-noise text-white shadow-md sticky top-0 z-40">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-4 flex flex-col lg:flex-row justify-between items-center content-overlay">
           <div className="flex flex-col md:flex-row items-center md:items-baseline mb-4 lg:mb-0">
@@ -226,7 +226,7 @@ const App: React.FC = () => {
         </div>
       </header>
 
-      <main className="container mx-auto px-4 sm:px-6 lg:px-8 py-8 content-overlay">
+      <main className="flex-grow container mx-auto px-4 sm:px-6 lg:px-8 py-8 content-overlay">
         {/* Error Message */}
         {error && (
           <div className="mb-6 glass-effect border border-red-300 text-red-700 px-4 py-3 rounded-lg">
@@ -353,7 +353,7 @@ const App: React.FC = () => {
         )}
       </main>
 
-      <footer className="bg-slate-800 text-slate-300 py-6 mt-12 text-center">
+      <footer className="bg-slate-800 text-slate-300 py-6 text-center mt-auto">
         <p className="text-sm text-slate-400 mt-1">
           Hecho con ❤️ para la comunidad.
           <br/>
