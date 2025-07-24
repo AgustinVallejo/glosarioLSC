@@ -28,7 +28,6 @@ export const WordCard: React.FC<WordCardProps> = ({ word, onAddAlternativeSign }
         loop
         controls={false} // controls can be distracting for "GIF" like videos
         onLoadStart={() => console.log(`🎬 [WordCard] Video ${index + 1} started loading:`, sign.video_url)}
-        onCanPlay={() => console.log(`✅ [WordCard] Video ${index + 1} can play:`, sign.video_url)}
         onError={(e) => console.error(`❌ [WordCard] Video ${index + 1} error:`, e, 'URL:', sign.video_url)}
       />
     )

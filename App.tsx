@@ -246,16 +246,13 @@ const App: React.FC = () => {
       </main>
 
       <footer className="bg-slate-800 text-slate-300 py-6 mt-12 text-center">
-        <p className="text-sm text-slate-400 mt-1">El Glosario Público de palabras y frases de LSC. Hecho con ❤️ para la comunidad sorda y quienes aprenden.</p>
-        {/* A button to clear local storage */}
-        <button
-          onClick={() => {
-            if (window.confirm("¿Estás seguro de que quieres borrar todas las palabras guardadas? Esta acción no se puede deshacer.")) {
-              WordsService.deleteAllWords();
-            }
-          }}
-          className="text-red-400 hover:text-red-500 mt-2" 
-        > Borrar Todo</button>
+        <p className="text-sm text-slate-400 mt-1">
+          El glosario público de palabras y frases de LSC.
+          <br/>
+          Hecho con ❤️ para la comunidad.
+          <br/>
+          Para dudas, correcciones o más información, escríbenos: info@qualiatech.org
+        </p>
       </footer>
 
       <AddWordModal
