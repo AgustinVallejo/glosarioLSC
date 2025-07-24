@@ -1,7 +1,6 @@
 
 import React, { useState, useRef, useEffect, useCallback } from 'react';
-import { Word } from '../types'; // Assuming types.ts has Word and SignVideo
-import { VideoCameraIcon, StopIcon, PlayIcon, CheckIcon, XMarkIcon, ArrowPathIcon } from './icons'; // Removed CameraIcon, assuming it's not used if photo functionality isn't being re-added here.
+import { VideoCameraIcon, StopIcon, PlayIcon, CheckIcon, XMarkIcon, ArrowPathIcon } from './icons';
 
 interface AddWordModalProps {
   isOpen: boolean;
@@ -9,9 +8,10 @@ interface AddWordModalProps {
   // This signature should match App.tsx's handleSaveWord.
   onSaveWord: (wordName: string, videoBlob: Blob) => void; 
   existingWordName?: string | null;
+  newWordName?: string | null;
 }
 
-export const AddWordModal: React.FC<AddWordModalProps> = ({ isOpen, onClose, onSaveWord, existingWordName }) => {
+export const AddWordModal: React.FC<AddWordModalProps> = ({ isOpen, onClose, onSaveWord, existingWordName, newWordName }) => {
   const [wordName, setWordName] = useState('');
   const [isRecording, setIsRecording] = useState(false);
   const [recordedVideoUrl, setRecordedVideoUrl] = useState<string | null>(null);
@@ -27,6 +27,8 @@ export const AddWordModal: React.FC<AddWordModalProps> = ({ isOpen, onClose, onS
   useEffect(() => {
     if (existingWordName) {
       setWordName(existingWordName);
+    } else if (newWordName) {
+      setWordName(newWordName);
     } else {
       setWordName('');
     }
@@ -35,7 +37,7 @@ export const AddWordModal: React.FC<AddWordModalProps> = ({ isOpen, onClose, onS
     setRecordedVideoBlob(null);
     setError(null);
     recordedChunksRef.current = [];
-  }, [isOpen, existingWordName]);
+  }, [isOpen, existingWordName, newWordName]);
 
   const cleanupVideoStream = useCallback(() => {
     if (videoStream) {
