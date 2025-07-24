@@ -16,11 +16,10 @@
   },
   "devDependencies": {
     "@types/node": "^22.14.0",
-    "@rollup/rollup-linux-x64-gnu": "4.45.1",
     "typescript": "~5.7.2",
     "vite": "^6.2.0"
   },
   "optionalDependencies": {
-    "@rollup/rollup-linux-x64-gnu": "4.45.1"
+    "@rollup/rollup-linux-x64-gnu": "4.6.1"
   }
 }
