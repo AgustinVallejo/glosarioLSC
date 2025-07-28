@@ -8,6 +8,7 @@ export interface SignVideo {
     longitude: number
     city?: string  // Optional nearby city name
   }
+  test: boolean  // Whether this sign was created in test/development mode
 }
 
 export interface Word {
@@ -29,7 +30,8 @@ export function convertSupabaseToAppFormat(supabaseWords: any[]): Word[] {
       const convertedSign: SignVideo = {
         id: sign.id,
         video_url: sign.video_url,
-        timestamp: new Date(sign.created_at).getTime()
+        timestamp: new Date(sign.created_at).getTime(),
+        test: sign.test || false  // Default to false if not provided
       }
 
       // Add note if it exists for this sign
@@ -117,4 +119,46 @@ function calculateDistance(lat1: number, lng1: number, lat2: number, lng2: numbe
     Math.sin(dLng/2) * Math.sin(dLng/2);
   const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
   return R * c;
+}
+
+// Utility function to detect if we're in development/test environment
+export function isDevelopmentEnvironment(): boolean {
+  // Check multiple indicators for development environment
+  try {
+    return (
+      process.env.NODE_ENV === 'development' ||
+      (typeof window !== 'undefined' && (
+        window.location?.hostname === 'localhost' ||
+        window.location?.hostname === '127.0.0.1' ||
+        window.location?.port === '5173' || // Vite default dev port
+        window.location?.port === '3000'    // Common dev port
+      )) ||
+      // Check if we're in Vite dev mode
+      (typeof import.meta !== 'undefined' && 
+       (import.meta as any).env?.DEV === true) ||
+      (typeof import.meta !== 'undefined' && 
+       (import.meta as any).env?.MODE === 'development')
+    );
+  } catch (error) {
+    console.warn('Could not detect environment, defaulting to production mode');
+    return false;
+  }
+}
+
+// Filter words based on environment (production should only show non-test words)
+export function filterWordsByEnvironment(words: Word[]): Word[] {
+  const isDev = isDevelopmentEnvironment();
+  
+  if (isDev) {
+    // In development, show all words
+    console.log('🔧 [Environment] Development mode: showing all words (including test)')
+    return words;
+  } else {
+    // In production, only show non-test words
+    console.log('🚀 [Environment] Production mode: filtering out test words')
+    return words.map(word => ({
+      ...word,
+      signs: word.signs.filter(sign => !sign.test)
+    })).filter(word => word.signs.length > 0); // Remove words with no non-test signs
+  }
 }

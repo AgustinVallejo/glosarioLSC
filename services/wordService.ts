@@ -1,5 +1,5 @@
 import { supabase, WordWithSigns } from '../supabase'
-import { getCityFromCoordinates } from '../types'
+import { getCityFromCoordinates, isDevelopmentEnvironment } from '../types'
 
 export class WordsService {
   // Debug function to test video URL accessibility
@@ -125,7 +125,8 @@ export class WordsService {
       blobType: videoBlob.type,
       existingWordsCount: existingWords.length,
       note,
-      location
+      location,
+      isTestEnvironment: isDevelopmentEnvironment()
     })
 
     try {
@@ -209,7 +210,8 @@ export class WordsService {
       // Prepare sign data with metadata
       const signData: any = {
         word_id: wordId,
-        video_url: urlData.publicUrl
+        video_url: urlData.publicUrl,
+        test: isDevelopmentEnvironment()  // Set test flag based on environment
       }
       
       if (note) signData.note = note

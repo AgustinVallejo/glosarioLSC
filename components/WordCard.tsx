@@ -1,6 +1,6 @@
 
 import React, { useState } from 'react';
-import { Word, getNearestCityText } from '../types';
+import { Word, getNearestCityText, isDevelopmentEnvironment } from '../types';
 import { PlusIcon, VideoCameraIcon, ChevronLeftIcon, ChevronRightIcon } from './icons';
 
 interface WordCardProps {
@@ -10,6 +10,7 @@ interface WordCardProps {
 
 export const WordCard: React.FC<WordCardProps> = ({ word, onAddAlternativeSign }) => {
   const [currentSignIndex, setCurrentSignIndex] = useState(0);
+  const isDev = isDevelopmentEnvironment();
   
   console.log('🎨 [WordCard] Rendering word:', word.name, 'with', word.signs.length, 'signs')
   console.log('🎨 [WordCard] Word data:', word)
@@ -74,9 +75,17 @@ export const WordCard: React.FC<WordCardProps> = ({ word, onAddAlternativeSign }
         )}
       </div>
       <div className="p-4 sm:p-5 flex flex-col flex-grow">
-        <h3 className="text-xl sm:text-2xl font-semibold text-sky-700 mb-2 truncate" title={word.name}>
-          {word.name}
-        </h3>
+        <div className="flex items-center justify-between mb-2">
+          <h3 className="text-xl sm:text-2xl font-semibold text-sky-700 truncate" title={word.name}>
+            {word.name}
+          </h3>
+          {/* Test indicator in development mode */}
+          {isDev && currentSign?.test && (
+            <span className="bg-orange-100 text-orange-600 text-xs px-2 py-1 rounded-full font-medium ml-2 flex-shrink-0">
+              TEST
+            </span>
+          )}
+        </div>
         
         {/* Metadatos de la seña actual */}
         {currentSign && (currentSign.note || currentSign.location) && (

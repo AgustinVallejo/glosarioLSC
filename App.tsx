@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
-import { Word, convertSupabaseToAppFormat } from './types';
+import { Word, convertSupabaseToAppFormat, filterWordsByEnvironment, isDevelopmentEnvironment } from './types';
 import { WordsService } from './services/wordService.ts';
 import { WordCard } from './components/WordCard';
 import { NonWordCard } from './components/NonWordCard';
@@ -14,6 +14,7 @@ const App: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const isDev = isDevelopmentEnvironment();
 
   // Load words from Supabase on mount
   useEffect(() => {
@@ -33,9 +34,11 @@ const App: React.FC = () => {
       console.log('📊 [App] Received supabase words:', supabaseWords)
       const appFormatWords = convertSupabaseToAppFormat(supabaseWords);
       console.log('📊 [App] Converted to app format:', appFormatWords)
-      console.log('📊 [App] Sample word structure:', appFormatWords[0])
-      setWordsList(appFormatWords);
-      console.log('✅ [App] Successfully loaded', appFormatWords.length, 'words')
+      const filteredWords = filterWordsByEnvironment(appFormatWords);
+      console.log('📊 [App] Filtered by environment:', filteredWords)
+      console.log('📊 [App] Sample word structure:', filteredWords[0])
+      setWordsList(filteredWords);
+      console.log('✅ [App] Successfully loaded', filteredWords.length, 'words')
     } catch (error) {
       console.error('❌ [App] Error loading words:', error);
       setError('Error al cargar las palabras. Por favor, recarga la página.');
@@ -75,6 +78,7 @@ const App: React.FC = () => {
           id: sign.id,
           word_id: word.id,
           video_url: sign.video_url,
+          test: sign.test,
           created_at: new Date(sign.timestamp).toISOString()
         }))
       }))
@@ -211,9 +215,17 @@ const App: React.FC = () => {
       <header className="bg-header-gradient granular-noise text-white shadow-md sticky top-0 z-40">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-4 flex flex-col lg:flex-row justify-between items-center content-overlay">
           <div className="flex flex-col md:flex-row items-center md:items-baseline mb-4 lg:mb-0">
-            <h1 className="title-font text-4xl md:text-5xl font-bold tracking-tight mb-3 md:mb-0 md:mr-7">
-              Señas
-            </h1>
+            <div className="flex items-center">
+              <h1 className="title-font text-4xl md:text-5xl font-bold tracking-tight mb-3 md:mb-0 md:mr-7">
+                Señas
+              </h1>
+              {/* Development environment indicator */}
+              {isDev && (
+                <span className="bg-orange-500 text-white text-xs px-2 py-1 rounded-full font-bold ml-3 animate-pulse">
+                  DEV
+                </span>
+              )}
+            </div>
             <h2 className="text-sm sm:text-base text-center md:text-left text-slate-100 leading-tight max-w-xs sm:max-w-sm md:max-w-md">
               El Glosario Público de Lengua de Señas Colombiana (LSC)
             </h2>

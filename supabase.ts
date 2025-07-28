@@ -39,6 +39,7 @@ export interface Sign {
   latitude?: number  // Optional GPS latitude for this sign
   longitude?: number  // Optional GPS longitude for this sign
   city?: string  // Optional nearby city name for this sign
+  test: boolean  // Whether this sign was created in test/development mode
   created_at: string
 }
 
