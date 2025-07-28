@@ -6,13 +6,17 @@ interface AddWordModalProps {
   isOpen: boolean;
   onClose: () => void;
   // This signature should match App.tsx's handleSaveWord.
-  onSaveWord: (wordName: string, videoBlob: Blob) => void; 
+  onSaveWord: (wordName: string, videoBlob: Blob, note?: string, location?: { latitude: number; longitude: number }) => void; 
   existingWordName?: string | null;
   newWordName?: string | null;
 }
 
 export const AddWordModal: React.FC<AddWordModalProps> = ({ isOpen, onClose, onSaveWord, existingWordName, newWordName }) => {
   const [wordName, setWordName] = useState('');
+  const [note, setNote] = useState('');
+  const [useLocation, setUseLocation] = useState(false);
+  const [location, setLocation] = useState<{ latitude: number; longitude: number } | null>(null);
+  const [locationError, setLocationError] = useState<string | null>(null);
   const [isRecording, setIsRecording] = useState(false);
   const [recordedVideoUrl, setRecordedVideoUrl] = useState<string | null>(null);
   const [recordedVideoBlob, setRecordedVideoBlob] = useState<Blob | null>(null);
@@ -32,6 +36,10 @@ export const AddWordModal: React.FC<AddWordModalProps> = ({ isOpen, onClose, onS
     } else {
       setWordName('');
     }
+    setNote('');
+    setUseLocation(false);
+    setLocation(null);
+    setLocationError(null);
     setIsRecording(false);
     setRecordedVideoUrl(null);
     setRecordedVideoBlob(null);
@@ -137,6 +145,33 @@ export const AddWordModal: React.FC<AddWordModalProps> = ({ isOpen, onClose, onS
     setIsRecording(false);
   };
   
+  const handleGetLocation = () => {
+    setLocationError(null);
+    if (!navigator.geolocation) {
+      setLocationError("La geolocalización no está soportada en este navegador.");
+      return;
+    }
+    
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        setLocation({
+          latitude: position.coords.latitude,
+          longitude: position.coords.longitude
+        });
+        setLocationError(null);
+      },
+      (error) => {
+        console.error("Error getting location:", error);
+        setLocationError("No se pudo obtener la ubicación. Verifica los permisos.");
+      },
+      {
+        enableHighAccuracy: true,
+        timeout: 10000,
+        maximumAge: 600000 // 10 minutes
+      }
+    );
+  };
+  
   const handleCloseModal = () => {
     cleanupVideoStream();
     onClose();
@@ -183,6 +218,73 @@ export const AddWordModal: React.FC<AddWordModalProps> = ({ isOpen, onClose, onS
               />
             </div>
           )}
+
+          {/* Note field */}
+          <div className="mb-5">
+            <label htmlFor="note" className="block text-sm font-medium text-slate-700 mb-1">
+              Nota (opcional)
+            </label>
+            <input
+              type="text"
+              id="note"
+              value={note}
+              onChange={(e) => setNote(e.target.value)}
+              placeholder="Ej: Solo se usa en Medellín, Jerga juvenil, etc."
+              className="w-full px-3 py-2 bg-white text-slate-900 border border-slate-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-sky-500 focus:border-sky-500 transition-colors"
+            />
+          </div>
+
+          {/* Location section */}
+          <div className="mb-5">
+            <div className="flex items-center mb-2">
+              <input
+                type="checkbox"
+                id="useLocation"
+                checked={useLocation}
+                onChange={(e) => setUseLocation(e.target.checked)}
+                className="mr-2 rounded border-slate-300 text-sky-600 focus:ring-sky-500"
+              />
+              <label htmlFor="useLocation" className="text-sm font-medium text-slate-700">
+                Añadir ubicación (opcional)
+              </label>
+            </div>
+            
+            {useLocation && (
+              <div className="pl-6 space-y-3">
+                <div className="flex items-center space-x-2">
+                  <button
+                    type="button"
+                    onClick={handleGetLocation}
+                    disabled={!!location}
+                    className="flex items-center bg-slate-500 hover:bg-slate-600 text-white text-sm font-medium py-1.5 px-3 rounded-md transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    📍 Obtener mi ubicación
+                  </button>
+                  {location && (
+                    <button
+                      type="button"
+                      onClick={() => setLocation(null)}
+                      className="text-slate-500 hover:text-slate-700 text-sm"
+                    >
+                      Limpiar
+                    </button>
+                  )}
+                </div>
+                
+                {location && (
+                  <div className="text-sm text-slate-600 bg-slate-50 p-2 rounded">
+                    📍 {location.latitude.toFixed(4)}°{location.latitude >= 0 ? 'N' : 'S'}, {location.longitude.toFixed(4)}°{location.longitude >= 0 ? 'E' : 'W'}
+                  </div>
+                )}
+                
+                {locationError && (
+                  <div className="text-sm text-red-600">
+                    {locationError}
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
 
           <div className="mb-5">
             <label className="block text-sm font-medium text-slate-700 mb-1">
@@ -248,7 +350,12 @@ export const AddWordModal: React.FC<AddWordModalProps> = ({ isOpen, onClose, onS
                   Volver a Grabar
                 </button>
                 <button
-                  onClick={() => recordedVideoBlob && onSaveWord(wordName, recordedVideoBlob)}
+                  onClick={() => recordedVideoBlob && onSaveWord(
+                    wordName, 
+                    recordedVideoBlob,
+                    note.trim() || undefined,
+                    useLocation ? location || undefined : undefined
+                  )}
                   disabled={!recordedVideoBlob}
                   className="w-full sm:w-auto flex items-center justify-center bg-sky-600 hover:bg-sky-700 text-white font-semibold py-2.5 px-6 rounded-lg transition-colors shadow-md focus:outline-none focus:ring-2 focus:ring-sky-500 disabled:opacity-50 disabled:cursor-not-allowed"
                 >

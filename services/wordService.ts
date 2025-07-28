@@ -1,4 +1,5 @@
-import { supabase, Word, Sign, WordWithSigns } from '../supabase'
+import { supabase, WordWithSigns } from '../supabase'
+import { getCityFromCoordinates } from '../types'
 
 export class WordsService {
   // Debug function to test video URL accessibility
@@ -111,12 +112,20 @@ export class WordsService {
   }
 
   // Add a new word or add sign to existing word
-  static async saveWord(wordName: string, videoBlob: Blob, existingWords: WordWithSigns[] = []): Promise<void> {
+  static async saveWord(
+    wordName: string, 
+    videoBlob: Blob, 
+    existingWords: WordWithSigns[] = [],
+    note?: string,
+    location?: { latitude: number; longitude: number }
+  ): Promise<void> {
     console.log('💾 [WordsService] Starting saveWord...', { 
       wordName, 
       blobSize: videoBlob.size, 
       blobType: videoBlob.type,
-      existingWordsCount: existingWords.length
+      existingWordsCount: existingWords.length,
+      note,
+      location
     })
 
     try {
@@ -144,6 +153,7 @@ export class WordsService {
       } else {
         // Create new word
         console.log('➕ [WordsService] Creating new word:', wordName.toLowerCase())
+        
         const { data: newWord, error: wordError } = await supabase
           .from('words')
           .insert({ name: wordName.toLowerCase() })
@@ -191,17 +201,35 @@ export class WordsService {
       // Save sign record
       console.log('💾 [WordsService] Saving sign record...', {
         word_id: wordId,
-        video_url: urlData.publicUrl
+        video_url: urlData.publicUrl,
+        note,
+        location
       })
       
-      const { data: signData, error: signError } = await supabase
+      // Prepare sign data with metadata
+      const signData: any = {
+        word_id: wordId,
+        video_url: urlData.publicUrl
+      }
+      
+      if (note) signData.note = note
+      if (location) {
+        signData.latitude = location.latitude
+        signData.longitude = location.longitude
+        // Try to get city name from coordinates
+        try {
+          const city = await getCityFromCoordinates(location.latitude, location.longitude)
+          if (city) signData.city = city
+        } catch (error) {
+          console.warn('Could not get city from coordinates:', error)
+        }
+      }
+      
+      const { data: newSign, error: signError } = await supabase
         .from('signs')
-        .insert({
-          word_id: wordId,
-          video_url: urlData.publicUrl
-        })
+        .insert(signData)
 
-      console.log('📊 [WordsService] Sign creation result:', { signData, signError })
+      console.log('📊 [WordsService] Sign creation result:', { newSign, signError })
 
       if (signError) {
         console.error('❌ [WordsService] Error creating sign:', {

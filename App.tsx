@@ -45,12 +45,14 @@ const App: React.FC = () => {
     }
   };
 
-  const handleSaveWord = useCallback(async (wordNameInput: string, videoBlob: Blob) => {
+  const handleSaveWord = useCallback(async (wordNameInput: string, videoBlob: Blob, note?: string, location?: { latitude: number; longitude: number }) => {
     console.log('💾 [App] Starting handleSaveWord...', { 
       wordNameInput, 
       blobSize: videoBlob.size, 
       blobType: videoBlob.type,
-      currentWordsCount: wordsList.length
+      currentWordsCount: wordsList.length,
+      note,
+      location
     })
     
     try {
@@ -81,7 +83,7 @@ const App: React.FC = () => {
       
       // Save to Supabase (pass existing words to avoid database lookup)
       console.log('📞 [App] Calling WordsService.saveWord with blob and existing words')
-      await WordsService.saveWord(wordNameInput, videoBlob, existingWordsForService);
+      await WordsService.saveWord(wordNameInput, videoBlob, existingWordsForService, note, location);
       console.log('✅ [App] Successfully saved word')
       
       // Reload words to show the new addition

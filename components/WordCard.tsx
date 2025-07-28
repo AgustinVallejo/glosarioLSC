@@ -1,8 +1,7 @@
 
-import React from 'react';
-import { Word } from '../types';
-import { Carousel } from './Carousel';
-import { PlusIcon, VideoCameraIcon } from './icons'; // Added VideoCameraIcon import
+import React, { useState } from 'react';
+import { Word, getNearestCityText } from '../types';
+import { PlusIcon, VideoCameraIcon, ChevronLeftIcon, ChevronRightIcon } from './icons';
 
 interface WordCardProps {
   word: Word;
@@ -10,36 +9,63 @@ interface WordCardProps {
 }
 
 export const WordCard: React.FC<WordCardProps> = ({ word, onAddAlternativeSign }) => {
+  const [currentSignIndex, setCurrentSignIndex] = useState(0);
+  
   console.log('🎨 [WordCard] Rendering word:', word.name, 'with', word.signs.length, 'signs')
   console.log('🎨 [WordCard] Word data:', word)
-  
-  const videoElements = word.signs.map((sign, index) => {
-    console.log(`🎥 [WordCard] Creating video element ${index + 1} for sign:`, sign)
-    console.log(`🎥 [WordCard] Video URL:`, sign.video_url)
-    
-    return (
-      <video
-        key={sign.id}
-        src={sign.video_url} // Fixed: was sign.dataUrl, should be sign.video_url
-        className="w-full h-full object-cover rounded-md aspect-video bg-slate-200"
-        playsInline
-        autoPlay
-        muted
-        loop
-        controls={false} // controls can be distracting for "GIF" like videos
-        onLoadStart={() => console.log(`🎬 [WordCard] Video ${index + 1} started loading:`, sign.video_url)}
-        onError={(e) => console.error(`❌ [WordCard] Video ${index + 1} error:`, e, 'URL:', sign.video_url)}
-      />
-    )
-  });
 
-  console.log('🎨 [WordCard] Created', videoElements.length, 'video elements')
+  const goToPrevious = () => {
+    const isFirstSign = currentSignIndex === 0;
+    const newIndex = isFirstSign ? word.signs.length - 1 : currentSignIndex - 1;
+    setCurrentSignIndex(newIndex);
+  };
+
+  const goToNext = () => {
+    const isLastSign = currentSignIndex === word.signs.length - 1;
+    const newIndex = isLastSign ? 0 : currentSignIndex + 1;
+    setCurrentSignIndex(newIndex);
+  };
+
+  const currentSign = word.signs[currentSignIndex];
 
   return (
     <div className="card-enhanced rounded-xl shadow-lg overflow-hidden flex flex-col transition-all duration-300 hover:shadow-2xl border-white/20">
-      <div className="aspect-video w-full bg-slate-200">
-        {videoElements.length > 0 ? (
-          <Carousel items={videoElements} itemContainerClassName="w-full h-full"/>
+      <div className="aspect-video w-full bg-slate-200 relative">
+        {word.signs.length > 0 ? (
+          <>
+            <video
+              src={currentSign.video_url}
+              className="w-full h-full object-cover rounded-md aspect-video bg-slate-200"
+              playsInline
+              autoPlay
+              muted
+              loop
+              controls={false}
+              onLoadStart={() => console.log(`🎬 [WordCard] Video started loading:`, currentSign.video_url)}
+              onError={(e) => console.error(`❌ [WordCard] Video error:`, e, 'URL:', currentSign.video_url)}
+            />
+            {word.signs.length > 1 && (
+              <>
+                <button
+                  onClick={goToPrevious}
+                  className="absolute top-1/2 left-1 transform -translate-y-1/2 bg-black bg-opacity-30 hover:bg-opacity-50 text-white p-2 rounded-full transition-opacity focus:outline-none"
+                  aria-label="Seña anterior"
+                >
+                  <ChevronLeftIcon className="w-5 h-5" />
+                </button>
+                <button
+                  onClick={goToNext}
+                  className="absolute top-1/2 right-1 transform -translate-y-1/2 bg-black bg-opacity-30 hover:bg-opacity-50 text-white p-2 rounded-full transition-opacity focus:outline-none"
+                  aria-label="Seña siguiente"
+                >
+                  <ChevronRightIcon className="w-5 h-5" />
+                </button>
+                <div className="absolute bottom-2 left-1/2 transform -translate-x-1/2 bg-black bg-opacity-50 text-white text-xs px-2 py-1 rounded-full">
+                  {currentSignIndex + 1} / {word.signs.length}
+                </div>
+              </>
+            )}
+          </>
         ) : (
           <div className="w-full h-full flex items-center justify-center text-slate-400">
             <VideoCameraIcon className="w-16 h-16" />
@@ -51,6 +77,23 @@ export const WordCard: React.FC<WordCardProps> = ({ word, onAddAlternativeSign }
         <h3 className="text-xl sm:text-2xl font-semibold text-sky-700 mb-2 truncate" title={word.name}>
           {word.name}
         </h3>
+        
+        {/* Metadatos de la seña actual */}
+        {currentSign && (currentSign.note || currentSign.location) && (
+          <div className="mb-3 space-y-1">
+            {currentSign.note && (
+              <p className="text-xs text-slate-500 italic">
+                💭 {currentSign.note}
+              </p>
+            )}
+            {currentSign.location && (
+              <p className="text-xs text-slate-500">
+                📍 {getNearestCityText(currentSign.location.latitude, currentSign.location.longitude, currentSign.location.city)}
+              </p>
+            )}
+          </div>
+        )}
+        
         <button
           onClick={() => onAddAlternativeSign(word.name)}
           className="mt-auto w-full flex items-center justify-center text-sm bg-sky-500 hover:bg-sky-600 text-white font-medium py-2 px-3 rounded-lg transition-colors duration-150 focus:outline-none focus:ring-2 focus:ring-sky-400 focus:ring-opacity-75"

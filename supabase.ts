@@ -35,6 +35,10 @@ export interface Sign {
   id: string
   word_id: string
   video_url: string
+  note?: string  // Optional note about this specific sign
+  latitude?: number  // Optional GPS latitude for this sign
+  longitude?: number  // Optional GPS longitude for this sign
+  city?: string  // Optional nearby city name for this sign
   created_at: string
 }
 
