@@ -130,8 +130,18 @@ const App: React.FC = () => {
     let wordsToDisplay = wordsList;
     
     if (trimmedSearchTerm) {
-      const searchWordsArray = trimmedSearchTerm
+      // Clean search term: keep only letters and spaces, remove punctuation
+      const cleanedSearchTerm = trimmedSearchTerm
         .toLowerCase()
+        .replace(/[^a-záéíóúñü\s]/g, '') // Keep only letters and spaces
+        .replace(/\s+/g, ' ') // Normalize multiple spaces to single spaces
+        .trim();
+      
+      if (!cleanedSearchTerm) {
+        return wordsToDisplay;
+      }
+      
+      const searchWordsArray = cleanedSearchTerm
         .split(/\s+/)
         .filter(term => term.length > 0);
       
@@ -141,12 +151,33 @@ const App: React.FC = () => {
         wordsMap.set(word.name.toLowerCase(), word);
       });
 
-      for (const searchWord of searchWordsArray) {
-        const matchedWord = wordsMap.get(searchWord);
-        if (matchedWord) {
-          foundWordsInOrder.push(matchedWord);
+      // Process words sequentially to maintain order, checking for n-grams first
+      let i = 0;
+      while (i < searchWordsArray.length) {
+        let foundMatch = false;
+        
+        // Try n-grams starting from current position (longest first)
+        for (let n = Math.min(3, searchWordsArray.length - i); n >= 2; n--) {
+          const nGram = searchWordsArray.slice(i, i + n).join(' ');
+          const matchedWord = wordsMap.get(nGram);
+          if (matchedWord) {
+            foundWordsInOrder.push(matchedWord);
+            i += n; // Skip the words that were part of this n-gram
+            foundMatch = true;
+            break;
+          }
+        }
+        
+        // If no n-gram found, try individual word
+        if (!foundMatch) {
+          const matchedWord = wordsMap.get(searchWordsArray[i]);
+          if (matchedWord) {
+            foundWordsInOrder.push(matchedWord);
+          }
+          i++; // Move to next word
         }
       }
+      
       wordsToDisplay = foundWordsInOrder;
     }
     
@@ -165,8 +196,18 @@ const App: React.FC = () => {
       return null;
     }
 
-    const searchWordsArray = trimmedSearchTerm
+    // Clean search term: keep only letters and spaces, remove punctuation
+    const cleanedSearchTerm = trimmedSearchTerm
       .toLowerCase()
+      .replace(/[^a-záéíóúñü\s]/g, '') // Keep only letters and spaces
+      .replace(/\s+/g, ' ') // Normalize multiple spaces to single spaces
+      .trim();
+    
+    if (!cleanedSearchTerm) {
+      return null;
+    }
+
+    const searchWordsArray = cleanedSearchTerm
       .split(/\s+/)
       .filter(term => term.length > 0);
     
@@ -179,14 +220,36 @@ const App: React.FC = () => {
     let hasFoundWords = false;
     let hasMissingWords = false;
 
-    for (const searchWord of searchWordsArray) {
-      const matchedWord = wordsMap.get(searchWord);
-      if (matchedWord) {
-        phraseItems.push({ type: 'found', word: matchedWord });
-        hasFoundWords = true;
-      } else {
-        phraseItems.push({ type: 'missing', word: searchWord });
-        hasMissingWords = true;
+    // Process words sequentially to maintain order, checking for n-grams first
+    let i = 0;
+    while (i < searchWordsArray.length) {
+      let foundMatch = false;
+      
+      // Try n-grams starting from current position (longest first)
+      for (let n = Math.min(3, searchWordsArray.length - i); n >= 2; n--) {
+        const nGram = searchWordsArray.slice(i, i + n).join(' ');
+        const matchedWord = wordsMap.get(nGram);
+        if (matchedWord) {
+          phraseItems.push({ type: 'found', word: matchedWord });
+          hasFoundWords = true;
+          i += n; // Skip the words that were part of this n-gram
+          foundMatch = true;
+          break;
+        }
+      }
+      
+      // If no n-gram found, try individual word
+      if (!foundMatch) {
+        const searchWord = searchWordsArray[i];
+        const matchedWord = wordsMap.get(searchWord);
+        if (matchedWord) {
+          phraseItems.push({ type: 'found', word: matchedWord });
+          hasFoundWords = true;
+        } else {
+          phraseItems.push({ type: 'missing', word: searchWord });
+          hasMissingWords = true;
+        }
+        i++; // Move to next word
       }
     }
 
