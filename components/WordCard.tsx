@@ -1,6 +1,6 @@
 
 import React, { useState } from 'react';
-import { Word, getNearestCityText, isDevelopmentEnvironment } from '../types';
+import { Word, isDevelopmentEnvironment } from '../types';
 import { PlusIcon, VideoCameraIcon, ChevronLeftIcon, ChevronRightIcon } from './icons';
 
 interface WordCardProps {
@@ -95,9 +95,9 @@ export const WordCard: React.FC<WordCardProps> = ({ word, onAddAlternativeSign }
                 💭 {currentSign.note}
               </p>
             )}
-            {currentSign.location && (
+            {currentSign.location?.city && (
               <p className="text-xs text-slate-500">
-                📍 {getNearestCityText(currentSign.location.latitude, currentSign.location.longitude, currentSign.location.city)}
+                📍 (Cerca a {currentSign.location.city})
               </p>
             )}
           </div>

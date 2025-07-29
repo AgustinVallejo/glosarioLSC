@@ -66,15 +66,6 @@ export function convertSupabaseToAppFormat(supabaseWords: any[]): Word[] {
   return convertedWords
 }
 
-// Utility function to find the nearest city given coordinates
-export function getNearestCityText(latitude: number, longitude: number, city?: string): string {
-  if (city) {
-    return `${latitude.toFixed(2)}°${latitude >= 0 ? 'N' : 'S'}, ${longitude.toFixed(2)}°${longitude >= 0 ? 'E' : 'W'} (Cerca de ${city})`
-  } else {
-    return `${latitude.toFixed(2)}°${latitude >= 0 ? 'N' : 'S'}, ${longitude.toFixed(2)}°${longitude >= 0 ? 'E' : 'W'}`
-  }
-}
-
 // Simple function to get approximate city name based on coordinates
 // This is a basic implementation - in production you'd use a proper geocoding service
 export async function getCityFromCoordinates(latitude: number, longitude: number): Promise<string | undefined> {
