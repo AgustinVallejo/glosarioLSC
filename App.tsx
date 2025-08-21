@@ -432,7 +432,7 @@ const App: React.FC = () => {
 
       <footer className="bg-slate-800 text-slate-300 py-6 text-center mt-auto">
         <p className="text-sm text-slate-400 mt-1">
-          Hecho con ❤️ para la comunidad.
+          Hecho con ❤️❤️❤️ para la comunidad.
           <br/>
           Para dudas, correcciones o más información, escríbenos: info@qualiatech.org
         </p>
